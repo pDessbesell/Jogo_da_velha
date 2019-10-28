@@ -249,12 +249,12 @@ int terminou_jogo(int tab[]) {
 
 	// verificando diagonal
 	if (tab[2] == tab[4] && tab[4] == tab[6]) {
-		return tab[0];
+		return tab[2];
 	}
 	else{
         j = 0;
         for (i = 0; i < 9; i++){
-            if (tab[i] == 0){
+            if (tab[i] != 1 && tab[i] != 2){
                 j++;
             }
         }
@@ -316,12 +316,15 @@ void versus_jogador() {
 
     }while(terminou_jogo(tab) == -1);
 
+    system("cls");
+    imprimir_tabuleiro(tab);
+
     if(terminou_jogo(tab) == 1)
-        printf("\nX venceu");
+        printf("\nX venceu\n");
     if(terminou_jogo(tab) == 2)
-        printf("\nO venceu");
+        printf("\nO venceu\n");
     if(terminou_jogo(tab) == 3)
-        printf("\nDeu velha");
+        printf("\nDeu velha\n");
 
 }
 
