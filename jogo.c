@@ -226,7 +226,7 @@ void menu_principal() {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 int terminou_jogo(int tab[]) {
-	int i;
+	int i, j = 0;
 
 	// verificando linhas
 	for (i = 0; i < 3; i++) {
@@ -249,10 +249,21 @@ int terminou_jogo(int tab[]) {
 
 	// verificando diagonal
 	if (tab[2] == tab[4] && tab[4] == tab[6]) {
-		return tab[0];
+		return tab[2];
 	}
+	else{
+        j = 0;
+        for (i = 0; i < 9; i++){
+            if (tab[i] != 1 && tab[i] != 2){
+                j++;
+            }
+        }
+	}
+	if(j==0){
+        return 3; //empate, deu velha
+        }
 
-	return -1;
+	return -1; //nao acabou
 }
 
 /* -----------------------------------------------------------------------------
@@ -271,8 +282,6 @@ void versus_computador(FILE* f) {
  */
 void versus_jogador() {
     int tab[9], coluna, linha, vez = 1;
-
-
 
     do{
         system("cls");
@@ -306,6 +315,16 @@ void versus_jogador() {
         }
 
     }while(terminou_jogo(tab) == -1);
+
+    system("cls");
+    imprimir_tabuleiro(tab);
+
+    if(terminou_jogo(tab) == 1)
+        printf("\nX venceu\n");
+    if(terminou_jogo(tab) == 2)
+        printf("\nO venceu\n");
+    if(terminou_jogo(tab) == 3)
+        printf("\nDeu velha\n");
 
 }
 
