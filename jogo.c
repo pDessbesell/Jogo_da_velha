@@ -13,7 +13,7 @@ void menu_principal();
 int ler_opcao();
 int terminou_jogo(int []);
 void versus_computador(FILE* f);
-void versus_jogador(FILE*);
+void versus_jogador();
 
 /*
  * Prototipos manipulacao de arquivos
@@ -29,12 +29,14 @@ void salvar_jogada (FILE*, int[]);
 
 void gen_random(char *, const int);
 
+
 /* -----------------------------------------------------------------------------
  * -----------------------------------------------------------------------------
  * MAIN
  * /////////////////////////////////////////////////////////////////////////////
  */
 int main(int argc, char **argv) {
+    int tab[9];
 
 	menu_principal();
 
@@ -68,7 +70,7 @@ void imprimir_tabuleiro(int tab[]) {
 		for (j = 0; j < 3; j++) {
 			int k = j + 3*i;
 
-			if (tab[k] == 0)
+			if (tab[k] == 2)
 				printf(" O ");
 			else if (tab[k] == 1)
 				printf(" X ");
@@ -170,12 +172,13 @@ void menu_jogar() {
 	switch(opcao) {
 	case 1:
 		f = inicializar_arquivo();
+
 		versus_jogador(f);
 		fclose(f);
 		break;
 
 	case 2:
-		versus_computador();
+		//versus_computador();
 		break;
 
 	case 3:
@@ -266,8 +269,44 @@ void versus_computador(FILE* f) {
  * Jogar Versus Jogador
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-void versus_jogador(FILE* f) {
-	// TODO
+void versus_jogador() {
+    int tab[9], coluna, linha, vez = 1;
+
+
+
+    do{
+        system("cls");
+        imprimir_tabuleiro(tab);
+        printf("Entre com a coluna: ");
+        scanf("%d", &coluna);
+        printf("Entre com a linha: ");
+        scanf("%d", &linha);
+
+        if(linha == 1){
+            if(vez == 1){
+                tab[coluna - 1] = 1;
+            }else
+                tab[coluna - 1] = 2;
+            vez *= -1;
+
+        }else if(linha == 2){
+            if(vez == 1){
+                tab[coluna - 1 + 3] = 1;
+            }else
+                tab[coluna - 1 + 3] = 2;
+            vez *= -1;
+
+        } else if(linha == 3){
+            if(vez == 1){
+                tab[coluna - 1 + 6] = 1;
+            }else
+                tab[coluna - 1 + 6] = 2;
+            vez *= -1;
+
+        }
+
+    }while(terminou_jogo(tab) == -1);
+
 }
 
 // -----------------------------------------------------------------------------
