@@ -277,7 +277,6 @@ void versus_computador(FILE *f) {
     do{
         system("cls");
         imprimir_tabuleiro(tab);
-        printf("\n%d\n", cpu);
 
         if(vez == 1){
             printf("Entre com a coluna: ");
