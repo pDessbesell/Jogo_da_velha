@@ -12,8 +12,8 @@ void menu_jogar();
 void menu_principal();
 int ler_opcao();
 int terminou_jogo(int []);
-void versus_computador(FILE* f);
-void versus_jogador();
+void versus_computador(FILE *f);
+void versus_jogador(FILE *f);
 
 /*
  * Prototipos manipulacao de arquivos
@@ -174,11 +174,10 @@ void menu_jogar() {
 		f = inicializar_arquivo();
 
 		versus_jogador(f);
-		fclose(f);
 		break;
 
 	case 2:
-		//versus_computador();
+		versus_computador(f);
 		break;
 
 	case 3:
@@ -271,8 +270,55 @@ int terminou_jogo(int tab[]) {
  * Jogar Versus Computador
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-void versus_computador(FILE* f) {
-	// TODO
+void versus_computador(FILE *f) {
+	int tab[9], verifica, coluna, linha, cpu, vez = 1;
+	time_t t;
+
+    do{
+        system("cls");
+        imprimir_tabuleiro(tab);
+        printf("\n%d\n", cpu);
+
+        if(vez == 1){
+            printf("Entre com a coluna: ");
+            scanf("%d", &coluna);
+            printf("Entre com a linha: ");
+            scanf("%d", &linha);
+
+            if(linha == 1){
+                tab[coluna - 1 + 0] = 1;
+
+            }else if(linha == 2){
+                tab[coluna - 1 + 3] = 1;
+
+            }else if(linha == 3){
+                tab[coluna - 1 + 6] = 1;
+            }
+        }
+        if(vez == -1)
+        {
+            srand((unsigned)time(NULL));
+            do{
+                cpu = ((rand()) % 9);
+            }while (tab[cpu] == 1 || tab[cpu] == 2);
+
+            tab[cpu] = 2;
+        }
+
+        vez *= -1;
+
+        verifica = terminou_jogo(tab);
+    }while(verifica == -1);
+
+    system("cls");
+    imprimir_tabuleiro(tab);
+
+    if(verifica == 1)
+        printf("\nX venceu\n\n");
+    if(verifica == 2)
+        printf("\nO venceu\n\n");
+    if(verifica == 3)
+        printf("\nDeu velha\n\n");
 }
 
 /* -----------------------------------------------------------------------------
@@ -280,7 +326,7 @@ void versus_computador(FILE* f) {
  * Jogar Versus Jogador
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-void versus_jogador() {
+void versus_jogador(FILE *f) {
     int tab[9], coluna, linha, vez = 1;
 
     do{
