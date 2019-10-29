@@ -12,6 +12,7 @@ void menu_jogar();
 void menu_principal();
 int ler_opcao();
 int terminou_jogo(int []);
+int pode_jogar(int tab[], int coluna, int linha);
 void versus_computador(FILE *f);
 void versus_jogador(FILE *f);
 
@@ -65,8 +66,10 @@ int ler_opcao () {
 void imprimir_tabuleiro(int tab[]) {
 	int i, j;
 
-	for (i = 0; i < 3; i++) {
+	printf("\n   (1) (2) (3)\n\n");
 
+	for (i = 0; i < 3; i++) {
+        printf("(%d)", i+1);
 		for (j = 0; j < 3; j++) {
 			int k = j + 3*i;
 
@@ -80,9 +83,10 @@ void imprimir_tabuleiro(int tab[]) {
 			if (j != 2)
 				printf("|");
 			else
-				printf("\n");
+				printf("\n\n");
 		}
 	}
+	printf("\n");
 }
 
 /* -----------------------------------------------------------------------------
@@ -264,6 +268,30 @@ int terminou_jogo(int tab[]) {
 
 	return -1; //nao acabou
 }
+/* ----------------------------------------------------------------------------
+ * PODE JOGAR
+ * Verifica se sera possivel realizar determinada jogada
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+
+int pode_jogar(int tab[], int coluna, int linha){
+    int i;
+
+    if(linha == 1){
+        if (tab[coluna - 1 + 0] == 1 || tab[coluna - 1 + 0] == 2)
+            return 0;
+
+    }else if(linha == 2){
+        if (tab[coluna - 1 + 3] == 1 || tab[coluna - 1 + 3] == 2)
+            return 0;
+
+    }else if(linha == 3){
+        if (tab[coluna - 1 + 6] == 1 || tab[coluna - 1 + 6] == 2)
+            return 0;
+    }
+    return 1;
+}
+
 
 /* -----------------------------------------------------------------------------
  * VERSUS COMPUTADOR
@@ -279,10 +307,19 @@ void versus_computador(FILE *f) {
         imprimir_tabuleiro(tab);
 
         if(vez == 1){
-            printf("Entre com a coluna: ");
-            scanf("%d", &coluna);
-            printf("Entre com a linha: ");
-            scanf("%d", &linha);
+            do{
+                do{
+                    printf("Entre com a COLUNA: ");
+                    scanf("%d", &coluna);
+                }while(coluna > 3 || coluna <= 0);
+
+                do{
+                    printf("Entre com a LINHA: ");
+                    scanf("%d", &linha);
+                }while(linha > 3 || linha <= 0);
+                pode_jogar(tab, coluna, linha);
+            }while (!pode_jogar(tab, coluna, linha));
+
 
             if(linha == 1){
                 tab[coluna - 1 + 0] = 1;
@@ -313,11 +350,11 @@ void versus_computador(FILE *f) {
     imprimir_tabuleiro(tab);
 
     if(verifica == 1)
-        printf("\nX venceu\n\n");
+        printf("\n *** X venceu ***\n\n");
     if(verifica == 2)
-        printf("\nO venceu\n\n");
+        printf("\n *** O venceu ***\n\n");
     if(verifica == 3)
-        printf("\nDeu velha\n\n");
+        printf("\n * Deu velha *\n\n");
 }
 
 /* -----------------------------------------------------------------------------
@@ -326,15 +363,23 @@ void versus_computador(FILE *f) {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 void versus_jogador(FILE *f) {
-    int tab[9], coluna, linha, vez = 1;
+    int tab[9], verifica, coluna, linha, vez = 1;
 
     do{
         system("cls");
         imprimir_tabuleiro(tab);
-        printf("Entre com a coluna: ");
-        scanf("%d", &coluna);
-        printf("Entre com a linha: ");
-        scanf("%d", &linha);
+        do{
+            do{
+                printf("Entre com a COLUNA: ");
+                scanf("%d", &coluna);
+            }while(coluna > 3 || coluna <= 0);
+
+            do{
+                printf("Entre com a LINHA: ");
+                scanf("%d", &linha);
+            }while(linha > 3 || linha <= 0);
+            pode_jogar(tab, coluna, linha);
+        }while (!pode_jogar(tab, coluna, linha));
 
         if(linha == 1){
             if(vez == 1){
@@ -358,19 +403,18 @@ void versus_jogador(FILE *f) {
             vez *= -1;
 
         }
-
-    }while(terminou_jogo(tab) == -1);
+            verifica = terminou_jogo(tab);
+    }while(verifica == -1);
 
     system("cls");
     imprimir_tabuleiro(tab);
 
-    if(terminou_jogo(tab) == 1)
-        printf("\nX venceu\n");
-    if(terminou_jogo(tab) == 2)
-        printf("\nO venceu\n");
-    if(terminou_jogo(tab) == 3)
-        printf("\nDeu velha\n");
-
+    if(verifica == 1)
+        printf("\n *** X venceu ***\n\n");
+    if(verifica == 2)
+        printf("\n *** O venceu ***\n\n");
+    if(verifica == 3)
+        printf("\n * Deu velha *\n\n");
 }
 
 // -----------------------------------------------------------------------------
