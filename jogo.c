@@ -68,10 +68,10 @@ int ler_opcao () {
 void imprimir_tabuleiro(int tab[]) {
 	int i, j;
 
-	printf("\n   (1) (2) (3)\n\n");
+	printf("\n   <1> <2> <3>\n\n");
 
 	for (i = 0; i < 3; i++) {
-        printf("(%d)", i+1);
+        printf("<%d>", i+1);
 		for (j = 0; j < 3; j++) {
 			int k = j + 3*i;
 
@@ -125,7 +125,7 @@ void menu_carregar_arquivo() {
 
 		case 2:
 			if (f == NULL) {
-				printf("� preciso primeiramente carregar um arquivo!");
+				printf("Щ preciso primeiramente carregar um arquivo!");
 			}
 			else {
 				exibir_resultado(f);
@@ -134,7 +134,7 @@ void menu_carregar_arquivo() {
 
 		case 3:
 			if (f == NULL) {
-						printf("� preciso primeiramente carregar um arquivo!");
+						printf("Щ preciso primeiramente carregar um arquivo!");
 			}
 			else {
 				exibir_duracao(f);
@@ -143,7 +143,7 @@ void menu_carregar_arquivo() {
 
 		case 4:
 			if (f == NULL) {
-						printf("� preciso primeiramente carregar um arquivo!");
+						printf("Щ preciso primeiramente carregar um arquivo!");
 			}
 			else {
 				printf("Entre com a jogada a ser exibida: ");
@@ -283,17 +283,17 @@ int pode_jogar(int tab[], int coluna, int linha){
 
     if(linha == 1){
         if (tab[coluna - 1 + 0] == 0 || tab[coluna - 1 + 0] == 1)
-            return 0;
+            return 0; //Invalida
 
     }else if(linha == 2){
         if (tab[coluna - 1 + 3] == 0 || tab[coluna - 1 + 3] == 1)
-            return 0;
+            return 0; //Invalida
 
     }else if(linha == 3){
         if (tab[coluna - 1 + 6] == 0 || tab[coluna - 1 + 6] == 1)
-            return 0;
+            return 0; //Invalida
     }
-    return 1;
+    return 1; //Valida
 }
 
 
@@ -356,9 +356,9 @@ void versus_computador(FILE *f) {
         }
         vez *= -1;
 
-        fwrite(tab, sizeof(tab), 1, temp);
+        fwrite(tab, sizeof(tab), 1, temp); //Salva a jogada atual
         verifica = terminou_jogo(tab);
-        njogadas++;
+        njogadas++; //Incrementa o numero total de jogadas ate o momento
     }while(verifica == -1);
 
     system("cls");
@@ -507,9 +507,7 @@ void exibir_jogada(FILE* f, int n) {
     fseek(f, 2*sizeof(int), SEEK_SET);
     fseek(f, (n-1) * sizeof(tab), SEEK_CUR);
 
-    //for(i = 0; i < 9; i++){
-        fread(tab, sizeof(int), 9, f);
-    //}
+    fread(tab, sizeof(int), 9, f);
 
     imprimir_tabuleiro(tab);
 }
@@ -535,13 +533,12 @@ void exibir_resultado(FILE* f) {
  * Abre o arquivo e inicializa o arquivo com valores padroes
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-FILE* inicializar_arquivo() {
-	// TODO
+FILE* inicializar_arquivo() { //Já está sendo realizada ao iniciar uma partida
 }
 
 /* -----------------------------------------------------------------------------
  * SALVAR DURACAO
- * Salva a dura��o (numero de jogadas) da partida no arquivo
+ * Salva a duraчуo (numero de jogadas) da partida no arquivo
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 void salvar_duracao (FILE *f, int dur) {
@@ -595,7 +592,11 @@ void gen_random(char *s, const int len) {
 
     s[len] = 0;
 }
-void configura_tabela(int tab[], int n){ //Apenas para garantir que o tabuleiro nao inicie com valores iguais
+
+/* Apenas para garantir que o tabuleiro nao inicie com valores repetidos,
+ * e também para facilitar a visualização do arquivo para debug
+ */
+void configura_tabela(int tab[], int n){
     int i;
     for(i = 0; i < n; i++){
         tab[i] = i + 65;
