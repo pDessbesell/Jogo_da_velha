@@ -15,6 +15,7 @@ int terminou_jogo(int []);
 int pode_jogar(int tab[], int coluna, int linha);
 void versus_computador(FILE *f);
 void versus_jogador(FILE *f);
+void configura_tabela(int tab[], int n);
 
 /*
  * Prototipos manipulacao de arquivos
@@ -27,6 +28,7 @@ FILE* inicializar_arquivo();
 void salvar_resultado (FILE*, int);
 void salvar_duracao (FILE*, int);
 void salvar_jogada (FILE*, int[]);
+void transfere_dados(FILE *g, FILE *f);
 
 void gen_random(char *, const int);
 
@@ -73,7 +75,7 @@ void imprimir_tabuleiro(int tab[]) {
 		for (j = 0; j < 3; j++) {
 			int k = j + 3*i;
 
-			if (tab[k] == 2)
+			if (tab[k] == 0)
 				printf(" O ");
 			else if (tab[k] == 1)
 				printf(" X ");
@@ -100,6 +102,7 @@ void menu_carregar_arquivo() {
 	char filename[15];
 
 	f = NULL;
+
 
 	do {
 		printf("~~~~~~~~~~~~~ CARREGAR ARQUIVO ~~~~~~~~~~~~~~~~~\n"
@@ -216,7 +219,8 @@ void menu_principal() {
 			break;
 
 		case 9:
-			printf("Programa finalizado!");
+		    printf("\nFinalizando...!");
+			printf("\nPrograma finalizado!");
 			return;
 			break;
 		}
@@ -278,15 +282,15 @@ int pode_jogar(int tab[], int coluna, int linha){
     int i;
 
     if(linha == 1){
-        if (tab[coluna - 1 + 0] == 1 || tab[coluna - 1 + 0] == 2)
+        if (tab[coluna - 1 + 0] == 0 || tab[coluna - 1 + 0] == 1)
             return 0;
 
     }else if(linha == 2){
-        if (tab[coluna - 1 + 3] == 1 || tab[coluna - 1 + 3] == 2)
+        if (tab[coluna - 1 + 3] == 0 || tab[coluna - 1 + 3] == 1)
             return 0;
 
     }else if(linha == 3){
-        if (tab[coluna - 1 + 6] == 1 || tab[coluna - 1 + 6] == 2)
+        if (tab[coluna - 1 + 6] == 0 || tab[coluna - 1 + 6] == 1)
             return 0;
     }
     return 1;
@@ -299,8 +303,18 @@ int pode_jogar(int tab[], int coluna, int linha){
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 void versus_computador(FILE *f) {
-	int tab[9], verifica, coluna, linha, cpu, vez = 1;
+    FILE *temp; //Arquivo temporario para salvar somente as jogadas
+	int tab[9], verifica, coluna, linha, cpu, vez = 1, njogadas = 0, i;
+	configura_tabela(tab, 9);
 	time_t t;
+
+	f = fopen("jogo.dat", "w");
+	if (f == NULL)
+        return;
+	temp = fopen("jogadas.dat", "w");
+	if (temp == NULL)
+        return;
+
 
     do{
         system("cls");
@@ -336,14 +350,15 @@ void versus_computador(FILE *f) {
             srand((unsigned)time(NULL));
             do{
                 cpu = ((rand()) % 9);
-            }while (tab[cpu] == 1 || tab[cpu] == 2);
+            }while (tab[cpu] == 0 || tab[cpu] == 1);
 
-            tab[cpu] = 2;
+            tab[cpu] = 0;
         }
-
         vez *= -1;
 
+        fwrite(tab, sizeof(tab), 1, temp);
         verifica = terminou_jogo(tab);
+        njogadas++;
     }while(verifica == -1);
 
     system("cls");
@@ -351,10 +366,24 @@ void versus_computador(FILE *f) {
 
     if(verifica == 1)
         printf("\n *** X venceu ***\n\n");
-    if(verifica == 2)
+    if(verifica == 0)
         printf("\n *** O venceu ***\n\n");
-    if(verifica == 3)
+    if(verifica != 0 && verifica != 1)
         printf("\n * Deu velha *\n\n");
+
+    //Abrindo o arquivo temporario para modo de leitura
+    fclose(temp);
+    temp = fopen("jogadas.dat", "r");
+
+    //Escrevendo o vencedor e o numero de jogadas para o arquivo principal
+    salvar_resultado(f, verifica);
+    salvar_duracao(f, njogadas);
+
+    //Copiando os dados do arquivo temporario para o arquivo principal
+    transfere_dados(temp, f);
+
+    fclose(f);
+    fclose(temp);
 }
 
 /* -----------------------------------------------------------------------------
@@ -363,11 +392,21 @@ void versus_computador(FILE *f) {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 void versus_jogador(FILE *f) {
-    int tab[9], verifica, coluna, linha, vez = 1;
+    FILE *temp;
+    int tab[9], verifica, coluna, linha, vez = 1, nJogadas = 0;
+    configura_tabela(tab, 9);
+
+    f = fopen("jogo.dat", "w");
+	if (f == NULL)
+        return;
+	temp = fopen("jogadas.dat", "w");
+	if (temp == NULL)
+        return;
 
     do{
         system("cls");
         imprimir_tabuleiro(tab);
+
         do{
             do{
                 printf("Entre com a COLUNA: ");
@@ -385,25 +424,27 @@ void versus_jogador(FILE *f) {
             if(vez == 1){
                 tab[coluna - 1] = 1;
             }else
-                tab[coluna - 1] = 2;
+                tab[coluna - 1] = 0;
             vez *= -1;
 
         }else if(linha == 2){
             if(vez == 1){
                 tab[coluna - 1 + 3] = 1;
             }else
-                tab[coluna - 1 + 3] = 2;
+                tab[coluna - 1 + 3] = 0;
             vez *= -1;
 
         } else if(linha == 3){
             if(vez == 1){
                 tab[coluna - 1 + 6] = 1;
             }else
-                tab[coluna - 1 + 6] = 2;
+                tab[coluna - 1 + 6] = 0;
             vez *= -1;
 
         }
+            fwrite(tab, sizeof(tab), 1, temp);
             verifica = terminou_jogo(tab);
+            nJogadas++;
     }while(verifica == -1);
 
     system("cls");
@@ -411,10 +452,24 @@ void versus_jogador(FILE *f) {
 
     if(verifica == 1)
         printf("\n *** X venceu ***\n\n");
-    if(verifica == 2)
+    if(verifica == 0)
         printf("\n *** O venceu ***\n\n");
-    if(verifica == 3)
+    if(verifica != 0 && verifica != 1)
         printf("\n * Deu velha *\n\n");
+
+    //Abrindo o arquivo temporario para modo de leitura
+    fclose(temp);
+    temp = fopen("jogadas.dat", "r");
+
+    //Escrevendo o vencedor e o numero de jogadas para o arquivo principal
+    salvar_resultado(f, verifica);
+    salvar_duracao(f, nJogadas);
+
+    //Copiando os dados do arquivo temporario para o arquivo principal
+    transfere_dados(temp, f);
+
+    fclose(f);
+    fclose(temp);
 }
 
 // -----------------------------------------------------------------------------
@@ -425,7 +480,8 @@ void versus_jogador(FILE *f) {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 FILE *carregar(char *filename) {
-	// TODO
+	FILE *f;
+	f = fopen(filename, "r");
 }
 
 /* -----------------------------------------------------------------------------
@@ -434,7 +490,10 @@ FILE *carregar(char *filename) {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 void exibir_duracao(FILE* f) {
-	// TODO
+	int dur;
+	fseek(f, 1 * sizeof(int), SEEK_SET);
+    fread(&dur, sizeof(int), 1, f);
+    printf("Total de %d jogadas\n", dur);
 }
 
 /* -----------------------------------------------------------------------------
@@ -443,7 +502,16 @@ void exibir_duracao(FILE* f) {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 void exibir_jogada(FILE* f, int n) {
-	// TODO
+	int tab[9], i;
+
+    fseek(f, 2*sizeof(int), SEEK_SET);
+    fseek(f, (n-1) * sizeof(tab), SEEK_CUR);
+
+    //for(i = 0; i < 9; i++){
+        fread(tab, sizeof(int), 9, f);
+    //}
+
+    imprimir_tabuleiro(tab);
 }
 
 /* -----------------------------------------------------------------------------
@@ -452,7 +520,14 @@ void exibir_jogada(FILE* f, int n) {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 void exibir_resultado(FILE* f) {
-	// TODO
+	int res;
+	fread(&res, sizeof(int), 1, f);
+	if(res == 1)
+        printf("\n *** X venceu ***\n\n");
+    if(res == 0)
+        printf("\n *** O venceu ***\n\n");
+    if(res != 0 && res != 1)
+        printf("\n * Deu velha *\n\n");
 }
 
 /* -----------------------------------------------------------------------------
@@ -470,7 +545,7 @@ FILE* inicializar_arquivo() {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 void salvar_duracao (FILE *f, int dur) {
-	// TODO
+	fwrite(&dur, sizeof(int), 1, f);
 }
 
 /* -----------------------------------------------------------------------------
@@ -479,7 +554,7 @@ void salvar_duracao (FILE *f, int dur) {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 void salvar_jogada (FILE *f, int tab[]) {
-	// TODO
+	fwrite(tab, sizeof(tab), 1, f);
 }
 
 /* -----------------------------------------------------------------------------
@@ -488,7 +563,7 @@ void salvar_jogada (FILE *f, int tab[]) {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 void salvar_resultado (FILE *f, int res) {
-	// TODO
+	fwrite(&res, sizeof(int), 1, f);
 }
 
 /* -----------------------------------------------------------------------------
@@ -496,6 +571,17 @@ void salvar_resultado (FILE *f, int res) {
  * Gera uma string aleatoria com o tamanho len passado como parametro
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
+
+void transfere_dados(FILE *g, FILE *f){
+    char c;
+    c = fgetc(g);
+    while (c != EOF)
+    {
+        fputc(c, f);
+        c = fgetc(g);
+    }
+ }
+
 void gen_random(char *s, const int len) {
 	srand(time(NULL));
     static const char alphanum[] =
@@ -508,4 +594,10 @@ void gen_random(char *s, const int len) {
     }
 
     s[len] = 0;
+}
+void configura_tabela(int tab[], int n){ //Apenas para garantir que o tabuleiro nao inicie com valores iguais
+    int i;
+    for(i = 0; i < n; i++){
+        tab[i] = i + 65;
+    }
 }
